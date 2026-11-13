@@ -101,7 +101,33 @@ The assessment prompt intentionally omitted several product details. The followi
 4. **Authorized Domain Whitelisting:** Manually configured `task-manager-app-eta-jade.vercel.app` (stripping the `https://` protocol prefix) in Firebase Authentication settings so OAuth worked in production.
 
 ### Example Prompts Used
-- **Initial Project Scaffolding Prompt:**
-  > *"Build a clean, lightweight Task Management Web Application for a technical assessment. Backend: Python 3.10+, FastAPI configured for Vercel serverless deployment under `/api`. Authentication: Firebase Authentication using Google Sign-In on the frontend, and Firebase Admin SDK Bearer ID token verification on the backend. Database: Cloud Firestore with user-scoped data isolation (`users/{uid}/tasks/{taskId}`). Frontend: Vanilla JavaScript, HTML5, and CSS bundled with Vite."*
-- **Local Environment & Build Verification Prompt:**
-  > *"Create a `.env` file in the root directory with the minified single-line JSON string for `FIREBASE_PRIVATE_KEY_JSON` alongside the Firebase Web SDK configuration values. Create a Python `venv`, install `requirements.txt`, run `npm install`, and verify that both the FastAPI app and Vite production build succeed cleanly."*
+#### Prompt 1 — Initial Project Scaffolding & Architecture
+> Build a clean, lightweight Task Management Web Application for a technical assessment. Keep the UI simple, modern, and strictly scoped to the core requirements without unnecessary bloat.
+>
+> **1. Tech Stack & Architecture**
+> - **Backend:** Python 3.10+, FastAPI, Uvicorn (configured for Vercel serverless deployment under `/api`).
+> - **Authentication:** Firebase Authentication using **Google Sign-In** (popup) on the frontend, and Firebase Admin SDK Bearer ID token verification on the backend.
+> - **Database:** Cloud Firestore with user-scoped data isolation (`users/{uid}/tasks/{taskId}`).
+> - **Frontend:** Vanilla JavaScript, HTML5, and CSS bundled with Vite.
+> - **Deployment:** Vercel configuration (`vercel.json`).
+>
+> **2. Core Functional Requirements**
+> 1. **Google Authentication:** Allow users to sign in and sign out using Google Authentication via Firebase. Protect all task API routes with a FastAPI dependency that verifies the Firebase Bearer ID token and extracts the user's `uid`.
+> 2. **Create Tasks:** Allow authenticated users to create a new task with a required `title` (validate against empty/whitespace-only inputs), an optional short `description`, a default `status` of `"Planned"`, and a `created_at` server timestamp.
+> 3. **View Tasks:** Display only the logged-in user's tasks, sorted by creation time, clearly grouped or badge-labeled by status.
+> 4. **Update Task Status:** Allow users to easily switch any task's status between the exact three states: `"Planned"`, `"In Progress"`, and `"Complete"`. (Also include a clean Delete button per task for basic usability).
+>
+> **3. Exact Folder Structure & Specific Configuration**
+> - Create `api/index.py`, `api/database.py`, `api/auth.py`, `api/routes/tasks.py`, `src/main.js`, `src/firebase.js`, `src/style.css`, `index.html`, `package.json`, `requirements.txt`, `vercel.json`, `.env.example`, and `.gitignore`.
+> - Initialize `firebase_admin` safely in `api/database.py` by parsing `FIREBASE_PRIVATE_KEY_JSON` (handling escaped `\n` newlines in `private_key` properly).
+> - Prefix all API routes with `/api` and configure `vite.config.js` to proxy `/api` requests to `http://127.0.0.1:8000` during local development.
+> - Generate all files with clean, well-commented, production-ready code, and include error handling for invalid tokens, network errors, and empty task titles.
+
+#### Prompt 2 — Local Environment Setup & Build Verification
+> Now let's configure the local environment, install dependencies, and verify the application setup:
+> 1. Read the Firebase service account JSON file located at: `<REDACTED_LOCAL_PATH>`
+> 2. Create a `.env` file in the root directory (confirming `.env` is already ignored in `.gitignore`).
+> 3. Populate `.env` with the exact minified single-line JSON string for `FIREBASE_PRIVATE_KEY_JSON` alongside the Firebase Web SDK configuration values (`VITE_FIREBASE_API_KEY="<REDACTED>"`, `VITE_FIREBASE_AUTH_DOMAIN="task-manager-app-a600e.firebaseapp.com"`, `VITE_FIREBASE_PROJECT_ID="<REDACTED>"`, `VITE_FIREBASE_STORAGE_BUCKET="<REDACTED>"`, `VITE_FIREBASE_MESSAGING_SENDER_ID="<REDACTED>"`, `VITE_FIREBASE_APP_ID="<REDACTED>"`).
+> 4. Check if a Python virtual environment (`venv`) exists; if not, create one and install all packages from `requirements.txt`.
+> 5. Run `npm install` to install all frontend dependencies.
+> 6. Verify that both the FastAPI app (`api/index.py`) and Vite production build (`npm run build`) initialize/build cleanly with zero syntax or import errors, and give me the exact commands to run both servers locally for testing.
