@@ -96,7 +96,7 @@ The assessment prompt intentionally omitted several product details. The followi
 
 ### Manual Modifications & Fixes Made to AI Output
 1. **Corrected Authentication Method (`Email/Password` -> `Google Sign-In`):** Initial architecture planning drafted email/password authentication; manually aligned the specification to use Google OAuth (`GoogleAuthProvider`) to satisfy Functional Requirement #1.
-2. **Fixed Corrupted `VITE_FIREBASE_AUTH_DOMAIN` Value:** During `.env` generation, clipboard URL formatting stripped the subdomain prefix down to `://firebaseapp.com`. Manually corrected `VITE_FIREBASE_AUTH_DOMAIN` to `://firebaseapp.com` so Google Sign-In popups resolve properly.
+2. **Fixed Corrupted `VITE_FIREBASE_AUTH_DOMAIN` Value:** During `.env` generation, clipboard URL formatting stripped the subdomain prefix down to `://firebaseapp.com`. Manually corrected `VITE_FIREBASE_AUTH_DOMAIN` to `task-manager-app-a600e.firebaseapp.com` so Google Sign-In popups resolve properly.
 3. **Service Account Credential Rotation:** Replaced an exposed Firebase Admin service account key with a newly generated private key and updated both local `.env` and Vercel production environment variables.
 4. **Authorized Domain Whitelisting:** Manually configured `task-manager-app-eta-jade.vercel.app` (stripping the `https://` protocol prefix) in Firebase Authentication settings so OAuth worked in production.
 
