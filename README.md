@@ -2,8 +2,8 @@
 
 A lightweight, user-scoped task management web application built for the **Graduate Support Engineer Trainee Assessment**. Users authenticate via Google Sign-In and manage personal tasks across **Planned**, **In Progress**, and **Complete** states.
 
-- **Live Application URL:** https://vercel.app
-- **Source Code Repository:** https://github.com
+- **Live Application URL:** `https://task-manager-app-eta-jade.vercel.app`
+- **Source Code Repository:** `https://github.com/Samkumar35/task-manager-app`
 
 ---
 
@@ -20,7 +20,7 @@ A lightweight, user-scoped task management web application built for the **Gradu
 ## 2. User Documentation
 
 ### How to Access & Log In (Live App)
-1. Open **https://vercel.app** in any modern web browser.
+1. Open **https://task-manager-app-eta-jade.vercel.app** in any modern web browser.
 2. Click **Continue with Google** on the landing screen.
 3. Choose your Google account in the authentication popup.
 4. Once authenticated, your personal workspace opens automatically.
@@ -37,7 +37,7 @@ If you want to run this project locally:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com.git
+   git clone https://github.com/Samkumar35/task-manager-app.git
    cd task-manager-app
    ```
 
