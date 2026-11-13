@@ -26,7 +26,33 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    status: TaskStatus
+    title: str | None = Field(default=None, max_length=120)
+    description: str | None = Field(default=None, max_length=500)
+    status: TaskStatus | None = None
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_a_valid_state(cls, value: TaskStatus | None) -> TaskStatus:
+        if value is None:
+            raise ValueError("Status must be one of the supported task states.")
+        return value
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            raise ValueError("Title cannot be empty.")
+        value = value.strip()
+        if not value:
+            raise ValueError("Title cannot be empty.")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def trim_description(cls, value: str | None) -> str | None:
+        if value is None:
+            raise ValueError("Description must be a string.")
+        return value.strip()
 
 
 def _tasks_collection(uid: str):
@@ -62,10 +88,13 @@ def create_task(payload: TaskCreate, user: dict = Depends(get_current_user)):
 @router.patch("/{task_id}")
 def update_task(task_id: str, payload: TaskUpdate, user: dict = Depends(get_current_user)):
     try:
+        updates = payload.model_dump(exclude_unset=True)
+        if not updates:
+            raise HTTPException(status_code=422, detail="Provide at least one field to update.")
         reference = _tasks_collection(user["uid"]).document(task_id)
         if not reference.get().exists:
             raise HTTPException(status_code=404, detail="Task not found.")
-        reference.update({"status": payload.status})
+        reference.update(updates)
         return {"id": task_id, **reference.get().to_dict()}
     except HTTPException:
         raise

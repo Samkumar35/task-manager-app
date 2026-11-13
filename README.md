@@ -29,6 +29,7 @@ A lightweight, user-scoped task management web application built for the **Gradu
 - **Create a Task:** Type a task title in the *"What needs to get done?"* input field, optionally add a short description under *"Add a note (optional)"*, and click **Add task +**. New tasks default to the **Planned** status.
 - **View Tasks:** All tasks belonging to your Google account load automatically, showing their title, optional note, and current status.
 - **Update Task Status:** Use the status controls on any task item to switch between **Planned**, **In Progress**, and **Complete**. Changes persist immediately to Cloud Firestore.
+- **Edit a Task:** Click **Edit** on a task card to update its title and description inline, then choose **Save** or **Cancel**.
 - **Delete a Task:** Click the delete option on a task card to permanently remove it from your list.
 - **Sign Out:** Click **Sign out** in the top-right header to end your session.
 
@@ -70,6 +71,7 @@ The assessment prompt intentionally omitted several product details. The followi
 - **Task Schema & Optional Description:** Beyond a task name and status, an optional short note/description field and server-generated `created_at` timestamp were added so users can add brief context and view tasks in chronological order.
 - **Input Validation:** Empty or whitespace-only task titles are blocked on both the client and backend (`422` / `400` validation) to prevent blank entries.
 - **Task Deletion:** Although only Create, View, and Status Update were explicitly listed, a simple **Delete** action was included so users can clean up completed or mistaken tasks.
+- **Inline Task Editing:** Users can edit a task's title and description directly on its card without deleting and recreating it.
 - **Default Status:** Newly created tasks automatically start in the **Planned** state rather than requiring users to pick a status during creation.
 
 ---

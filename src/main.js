@@ -6,6 +6,7 @@ const root = document.querySelector('#app');
 let currentUser = null;
 let tasks = [];
 let loading = false;
+let editingTaskId = null;
 let notice = '';
 let noticeType = 'error';
 
@@ -43,20 +44,30 @@ async function loadTasks() {
 }
 
 function renderTask(task) {
+  const isEditing = editingTaskId === task.id;
   const date = task.created_at?._seconds
     ? new Date(task.created_at._seconds * 1000)
     : new Date(task.created_at);
   const dateLabel = Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
-  return `<article class="task-card">
-    <div class="task-main"><div class="task-copy"><h3>${escapeHtml(task.title)}</h3>
-      ${task.description ? `<p>${escapeHtml(task.description)}</p>` : ''}
+  return `<article class="task-card ${isEditing ? 'is-editing' : ''}">
+    <div class="task-main"><div class="task-copy">
+      ${isEditing ? `<form id="edit-form-${escapeHtml(task.id)}" class="edit-form" data-edit-form="${escapeHtml(task.id)}">
+        <label class="sr-only" for="edit-title-${escapeHtml(task.id)}">Task title</label>
+        <input id="edit-title-${escapeHtml(task.id)}" name="title" class="edit-title" value="${escapeHtml(task.title)}" maxlength="120" required>
+        <label class="sr-only" for="edit-description-${escapeHtml(task.id)}">Task description</label>
+        <textarea id="edit-description-${escapeHtml(task.id)}" name="description" class="edit-description" maxlength="500" placeholder="Add a note (optional)">${escapeHtml(task.description || '')}</textarea>
+        <p class="edit-error" data-edit-error role="alert"></p>
+      </form>` : `<h3>${escapeHtml(task.title)}</h3>
+        ${task.description ? `<p>${escapeHtml(task.description)}</p>` : ''}`}
       <span class="task-date">${dateLabel ? `Added ${dateLabel}` : 'Just added'}</span></div>
       <div class="task-controls"><span class="status status-${task.status.toLowerCase().replace(' ', '-')}">${escapeHtml(task.status)}</span>
-        <label class="sr-only" for="status-${escapeHtml(task.id)}">Change status for ${escapeHtml(task.title)}</label>
-        <select id="status-${escapeHtml(task.id)}" data-status="${escapeHtml(task.id)}" aria-label="Change status">
-          ${['Planned', 'In Progress', 'Complete'].map(status => `<option ${task.status === status ? 'selected' : ''}>${status}</option>`).join('')}
-        </select>
-        <button class="delete-button" data-delete="${escapeHtml(task.id)}" aria-label="Delete ${escapeHtml(task.title)}">Delete</button>
+        ${isEditing ? `<button class="edit-action save-button" type="submit" form="edit-form-${escapeHtml(task.id)}" data-save="${escapeHtml(task.id)}">Save</button>
+          <button class="edit-action cancel-button" type="button" data-cancel-edit>Cancel</button>` : `<label class="sr-only" for="status-${escapeHtml(task.id)}">Change status for ${escapeHtml(task.title)}</label>
+          <select id="status-${escapeHtml(task.id)}" data-status="${escapeHtml(task.id)}" aria-label="Change status">
+            ${['Planned', 'In Progress', 'Complete'].map(status => `<option ${task.status === status ? 'selected' : ''}>${status}</option>`).join('')}
+          </select>
+          <button class="edit-button" type="button" data-edit="${escapeHtml(task.id)}">Edit</button>
+          <button class="delete-button" data-delete="${escapeHtml(task.id)}" aria-label="Delete ${escapeHtml(task.title)}">Delete</button>`}
       </div></div></article>`;
 }
 
@@ -102,6 +113,42 @@ function render() {
     try { await apiRequest(`/${encodeURIComponent(select.dataset.status)}`, { method: 'PATCH', body: JSON.stringify({ status: select.value }) }); notice = ''; await loadTasks(); }
     catch (error) { showNotice(error.message || 'Status could not be updated.'); }
     finally { select.disabled = false; }
+  }));
+  document.querySelectorAll('[data-edit]').forEach(button => button.addEventListener('click', () => {
+    editingTaskId = button.dataset.edit;
+    notice = '';
+    render();
+    document.querySelector(`#edit-title-${CSS.escape(editingTaskId)}`)?.focus();
+  }));
+  document.querySelectorAll('[data-cancel-edit]').forEach(button => button.addEventListener('click', () => {
+    editingTaskId = null;
+    render();
+  }));
+  document.querySelectorAll('[data-edit-form]').forEach(form => form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const title = form.elements.title.value.trim();
+    const error = form.querySelector('[data-edit-error]');
+    if (!title) {
+      error.textContent = 'Please enter a task title.';
+      form.elements.title.focus();
+      return;
+    }
+    const saveButton = document.querySelector(`[data-save="${CSS.escape(form.dataset.editForm)}"]`);
+    saveButton.disabled = true;
+    error.textContent = '';
+    try {
+      const updatedTask = await apiRequest(`/${encodeURIComponent(form.dataset.editForm)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ title, description: form.elements.description.value.trim() }),
+      });
+      tasks = tasks.map(task => task.id === updatedTask.id ? updatedTask : task);
+      editingTaskId = null;
+      notice = '';
+      render();
+    } catch (requestError) {
+      error.textContent = requestError.message || 'Task could not be updated. Check your connection and try again.';
+      saveButton.disabled = false;
+    }
   }));
   document.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', async () => {
     button.disabled = true;
