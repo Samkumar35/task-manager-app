@@ -17,6 +17,7 @@ export const missingFirebaseConfig = Object.entries(config)
 const app = missingFirebaseConfig.length ? null : initializeApp(config);
 export const auth = app ? getAuth(app) : null;
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
 
 export async function signInWithGoogle() {
   if (!auth) throw new Error('Firebase web configuration is missing. Copy .env.example to .env and add your Firebase values.');
